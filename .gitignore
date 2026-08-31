@@ -1,0 +1,24 @@
+# ============ Python ============
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# ============ 环境与密钥（绝不能提交！） ============
+.env
+
+# ============ 运行时产物 ============
+logs/
+uploads/
+test_chat.db
+test_uploads/
+*.sqlite3
+dev.db
+
+# ============ IDE / 系统 ============
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

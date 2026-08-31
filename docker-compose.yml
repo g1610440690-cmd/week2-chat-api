@@ -1,0 +1,65 @@
+# ============ Docker Compose：一键启动整个服务栈 ============
+# 启动：   docker compose up -d --build
+# 查看：   docker compose ps
+# 日志：   docker compose logs -f api
+# 停止：   docker compose down          （保留数据卷）
+# 清空：   docker compose down -v       （连数据库数据一起删，慎用）
+
+services:
+  # ---------- PostgreSQL：持久化（用户/会话/消息） ----------
+  db:
+    image: postgres:16-alpine
+    container_name: week2-db
+    environment:
+      POSTGRES_USER: chat
+      POSTGRES_PASSWORD: chatpass
+      POSTGRES_DB: chatdb
+    ports:
+      - "5432:5432"   # 映射到宿主机，方便用 psql / DBeaver 调试（不需要可删掉）
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # 数据卷：容器删了数据还在
+    healthcheck:                          # 健康检查：api 等 db 就绪后再启动
+      test: ["CMD-SHELL", "pg_isready -U chat -d chatdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ---------- Redis：临时状态（限流计数、缓存） ----------
+  redis:
+    image: redis:7-alpine
+    container_name: week2-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ---------- FastAPI 应用 ----------
+  api:
+    build: .
+    container_name: week2-api
+    # environment 优先级高于 env_file，这里把数据库/Redis 指到容器内的服务名
+    environment:
+      DATABASE_URL: postgresql+asyncpg://chat:chatpass@db:5432/chatdb
+      REDIS_URL: redis://redis:6379/0
+      UPLOAD_DIR: /data/uploads
+      JWT_SECRET: ${JWT_SECRET:-please-change-me-in-production}
+    env_file:
+      - path: .env          # 其它配置（如 MAX_UPLOAD_SIZE_MB）从 .env 读取
+        required: false     # .env 不存在也不报错（先 cp .env.example .env 更佳）
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploaddata:/data/uploads   # 上传的文件持久化
+    depends_on:
+      db:
+        condition: service_healthy   # 等 db 健康检查通过才启动 api
+      redis:
+        condition: service_healthy
+    restart: unless-stopped          # 崩溃自动重启（演示进程守护）
+
+volumes:
+  pgdata:
+  uploaddata:
