@@ -22,8 +22,8 @@ git --version   # 看到版本号即可，如 git version 2.55.0
 ### 1.3 配置身份（只做一次）
 
 ```bash
-git config --global user.name "你的GitHub用户名"
-git config --global user.email "你注册GitHub用的邮箱"
+git config --global user.name "guozhaoqin"
+git config --global user.email "g1610440690@gmail.com"
 ```
 
 > 身份会写进每次 commit 记录里。`--global` 表示对所有仓库生效。
