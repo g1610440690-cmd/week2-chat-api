@@ -63,7 +63,7 @@ git commit -m "第 2 周交付：带会话持久化的流式聊天 API"
 git branch -M main
 
 # ⑥ 关联远程仓库（地址替换成你自己的，从第 2 步创建后的页面复制）
-git remote add origin https://github.com/你的用户名/week2-chat-api.git
+git remote add origin https://github.com/guozhaoqin/week2-chat-api.git
 
 # ⑦ 推送（-u 记住关联，以后直接 git push 即可）
 git push -u origin main
